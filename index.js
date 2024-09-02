@@ -1,74 +1,58 @@
-// Import required modules
 const express = require('express');
 const { google } = require('googleapis');
-const bodyParser = require('body-parser');
+const session = require('express-session');
 
-// Initialize Express app
 const app = express();
-app.use(bodyParser.json());
+const port = process.env.PORT || 3000;
 
-// Google Calendar API setup
+const CLIENT_ID = '900634394608-5juisvhtut7ps5q7cmb9gnqjgd6lh9i3.apps.googleusercontent.com';
+const CLIENT_SECRET = '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';
+const REDIRECT_URI = 'https://calendar-event-7axn.onrender.com/oauth2callback';
 const SCOPES = ['https://www.googleapis.com/auth/calendar'];
-const CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID';
-const CLIENT_SECRET = 'YOUR_GOOGLE_CLIENT_SECRET';
-const REDIRECT_URI = 'YOUR_REDIRECT_URI';
-const REFRESH_TOKEN = 'YOUR_REFRESH_TOKEN';
 
 const oauth2Client = new google.auth.OAuth2(
-    CLIENT_ID,
-    CLIENT_SECRET,
-    REDIRECT_URI
+  CLIENT_ID,
+  CLIENT_SECRET,
+  REDIRECT_URI
 );
 
-// Set credentials using the refresh token
-oauth2Client.setCredentials({
-    refresh_token: REFRESH_TOKEN,
-});
+// Middleware for session management
+app.use(session({
+  secret: 'your-secret-key',
+  resave: false,
+  saveUninitialized: true
+}));
 
-// Initialize Google Calendar API
-const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
-
-// Root route to handle '/'
+// Initial route to start OAuth flow
 app.get('/', (req, res) => {
-    res.send('Node.js server is running!');
+  if (!req.session.tokens) {
+    const authUrl = oauth2Client.generateAuthUrl({
+      access_type: 'offline',
+      scope: SCOPES,
+    });
+    res.redirect(authUrl);
+  } else {
+    oauth2Client.setCredentials(req.session.tokens);
+    res.send('Node.js server is running and authenticated!');
+  }
 });
 
-// Endpoint to handle booking data from WordPress plugin
-app.post('/create-event', async (req, res) => {
-    const { name, email, date, time, message } = req.body;
-
-    const eventStartTime = new Date(`${date}T${time}`);
-    const eventEndTime = new Date(eventStartTime);
-    eventEndTime.setMinutes(eventEndTime.getMinutes() + 30); // Assuming 30 minutes duration
-
-    const event = {
-        summary: `Appointment with ${name}`,
-        description: message,
-        start: {
-            dateTime: eventStartTime.toISOString(),
-            timeZone: 'America/Los_Angeles', // Set your timezone
-        },
-        end: {
-            dateTime: eventEndTime.toISOString(),
-            timeZone: 'America/Los_Angeles', // Set your timezone
-        },
-        attendees: [{ email: email }],
-    };
-
-    try {
-        await calendar.events.insert({
-            calendarId: 'primary',
-            resource: event,
-        });
-        res.status(200).send({ success: true, message: 'Event created successfully!' });
-    } catch (error) {
-        console.error('Error creating event:', error);
-        res.status(500).send({ success: false, message: 'Failed to create event', error: error.message });
-    }
+// OAuth2 callback
+app.get('/oauth2callback', async (req, res) => {
+  const code = req.query.code;
+  const { tokens } = await oauth2Client.getToken(code);
+  
+  // Save tokens to the session
+  req.session.tokens = tokens;
+  oauth2Client.setCredentials(tokens);
+  
+  // If you get a refresh token, save it securely
+  console.log('Refresh Token:', tokens.refresh_token);
+  
+  res.send('Authentication successful! You can close this window.');
 });
 
-// Start the server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+// Listen on the specified port
+app.listen(port, () => {
+  console.log(`Node.js server is running on port ${port}`);
 });
