@@ -28,6 +28,11 @@ oauth2Client.setCredentials({
 // Initialize Google Calendar API
 const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
+// Root route to handle '/'
+app.get('/', (req, res) => {
+    res.send('Node.js server is running!');
+});
+
 // Endpoint to handle booking data from WordPress plugin
 app.post('/create-event', async (req, res) => {
     const { name, email, date, time, message } = req.body;
