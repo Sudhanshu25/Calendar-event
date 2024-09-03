@@ -17,6 +17,14 @@ const oauth2Client = new google.auth.OAuth2(
   REDIRECT_URI
 );
 
+const cors = require('cors');
+app.use(cors({
+    origin: 'http://plugin-development.local', // Replace with your WordPress site URL
+    methods: ['POST'],
+    credentials: true,
+}));
+
+
 // Middleware for session management
 app.use(session({
   secret: 'your-secret-key',
