@@ -2,7 +2,7 @@ services:
   - type: web
     name: calendar-event
     env: node
-    buildCommand: 'npm install'
+    buildCommand: 'npm install express googleapis body-parser express-session'
     startCommand: 'node index.js'
     envVars:
       - key: CLIENT_ID
