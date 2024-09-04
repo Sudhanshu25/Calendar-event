@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: calendar-event
+    env: node
+    buildCommand: 'npm install'
+    startCommand: 'node index.js'
+    envVars:
+      - key: CLIENT_ID
+        value: ''
+      - key: CLIENT_SECRET
+        value: ''
+      - key: REDIRECT_URI
+        value: ''
+    plan: free

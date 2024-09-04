@@ -6,9 +6,9 @@ const bodyParser = require('body-parser');
 const app = express();
 const port = process.env.PORT || 3000;
 
-const CLIENT_ID = '900634394608-5juisvhtut7ps5q7cmb9gnqjgd6lh9i3.apps.googleusercontent.com';
-const CLIENT_SECRET = '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';
-const REDIRECT_URI = 'https://calendar-event-7axn.onrender.com/oauth2callback'; // Update to your redirect URI
+const CLIENT_ID = process.env.CLIENT_ID;
+const CLIENT_SECRET = process.env.CLIENT_SECRET;
+const REDIRECT_URI = process.env.REDIRECT_URI; // Update to your redirect URI
 const SCOPES = ['https://www.googleapis.com/auth/calendar'];
 
 const oauth2Client = new google.auth.OAuth2(
