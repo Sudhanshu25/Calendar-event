@@ -6,9 +6,14 @@ services:
     startCommand: 'node index.js'
     envVars:
       - key: CLIENT_ID
-        value: ''
+        fromDatabase:
+          name: CLIENT_ID
+          defaultValue: "your-default-client-id" # Optional, you can leave this empty
       - key: CLIENT_SECRET
-        value: ''
+        fromDatabase:
+          name: CLIENT_SECRET
+          defaultValue: "your-default-client-secret" # Optional, you can leave this empty
       - key: REDIRECT_URI
-        value: ''
-    plan: free
+        fromDatabase:
+          name: REDIRECT_URI
+          defaultValue: "your-default-redirect-uri" # Optional, you can leave this empty
